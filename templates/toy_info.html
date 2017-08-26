@@ -16,8 +16,9 @@
             </div>
             {% if true == true %}
             <div class="card-action">
-              <a href="#">Edit</a>
-              <a href="#">Delete</a>
+              <a <a href="/toys/{{toystore_id}}/{{toy.id}}/edit" id="edit-toy" class="waves-effect waves-light btn">Edit</a>
+              <a href="/toys/{{toystore_id}}/{{toy.id}}/delete" id="delete-toy" class="waves-effect waves-light btn">Delete</a>
+              <a href="/toystores/{{toystore_id}}/" id="delete-toy" class="waves-effect waves-light btn">Back to store</a>
             </div>
             {% else %}
             <div class="card-action">
