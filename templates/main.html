@@ -1,0 +1,34 @@
+{% extends "base.html" %} {% block head %} {{ super() }} {% endblock %} {% block content %}
+<div class="list-box">
+    <ul id="main-stores" class="collection with-header">
+        <li class="collection-header">
+            <h4>Toy Stores 
+                {% if true == true %}
+                <a href="/toystores/new" id="add-store" class="waves-effect waves-light btn">Add Store</a>
+                 {% else %}
+                <a id="edit-store" class="waves-effect waves-light btn" href="#">Login to edit items</a> 
+                {% endif %}
+            </h4>
+        </li>
+        {% for store in stores %}
+        <li class="collection-item">
+            <a href="{{store.id}}" class="">{{store.name}}</a>
+            <!--<a href="#!" class="secondary-content">
+            <i class="material-icons">Edit</i>-->
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    <ul class="collection with-header">
+        <li class="collection-header">
+            <h4>Latest Toys</h4>
+        </li>
+        {% for toy in toys %}
+        <li class="collection-item">
+            <a href="/toys/{{toy.toystore_id}}/{{toy.id}}" class="">{{toy.name}}</a>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %} {% block head %} {{ super() }} {% endblock %} {% block content %}
+
+<h1> New Toystore </h1>
+
+<div class="form">
+<form action="{{url_for('newToystore')}}" method = 'POST'>
+
+<p>Name:</p>
+<input type='text' size='30' name='name'>
+<p>Description:</p>
+<input type='text' size='200' name='description'>
+<p>Address:</p>
+<input type='text' size='200' name='address'>
+<p>Phone:</p>
+<input type='text' size='15' name='phone_number'>
+
+<input id="submit-btn"  class="waves-effect waves-light btn" type='submit' value='Create'>
+<a class="cancel waves-effect waves-light btn" href = "{{ url_for('toystores')}}"> Cancel </a>
+
+</form>
+</div>
+
+{% endblock %}

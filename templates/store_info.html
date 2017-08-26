@@ -1,0 +1,21 @@
+{% extends "base.html" %} {% block head %} {{ super() }} {% endblock %} {% block content %}
+<ul class="collection with-header">
+    <li class="collection-header">
+        <h4>Current Toys for {{store.name}} {% if true == true %}
+            <div class="card-action">
+                <a href="/toystores/{{store.id}}/add-toy" id="add-toy" class="waves-effect waves-light btn">Add Toy</a>
+                <a href="/toystores/{{store.id}}/edit" id="edit-store" class="waves-effect waves-light btn">Edit Store</a>
+                <a href="/toystores/{{store.id}}/delete" id="delete-store" class="waves-effect waves-light btn">Delete Store</a>
+            </div>
+            {% else %}
+                <a id="edit-store" class="waves-effect waves-light btn" href="#">Login to edit items</a> {% endif %}
+        </h4>
+    </li>
+    {% for toy in storetoys %}
+    <li class="collection-item">
+        <a href="/toys/{{toy.toystore_id}}/{{toy.id}}" class="">{{toy.name}}</a>
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
