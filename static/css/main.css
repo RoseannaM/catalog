@@ -1,0 +1,85 @@
+.active{
+    background-color: grey;
+}
+h1{
+   margin-left: 20px;
+
+}
+#pagenav  {
+	background: #FBC02D!important;
+}
+#content{
+display: grid;
+}
+#main-stores{
+    float: left;
+    width: 40%;
+}
+.btn {
+    box-shadow: none;
+    padding-right: 10px;
+    padding-left: 10px;
+    margin-left: 20px;
+}
+.form {
+    margin: 20px;
+}
+.form p{
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.cancel{
+    width: 117px;
+    margin-top: 15px;
+    background-color: lightcoral;
+}
+.cancel:hover{
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    vertical-align: middle;
+    z-index: 1;
+    -webkit-transition: .3s ease-out;
+    transition: .3s ease-out;
+    background-color:#f39c9c;
+}
+.card-action a{
+margin-left: 0;
+margin-right: 20px;
+}
+/*.collection .collection-item {
+    border: none;
+}
+.pagenav ul {
+    margin: 0;
+    list-style: none; 
+}
+.pagenav  li {
+	float: left;
+    margin: 0 20px;
+    border: solid 1px black;
+    background-color: lightseagreen;
+    height: 50px;
+    width: calc(100% - 75%);
+ }*/
+
+ /*toys template css*/
+.collection-item a {
+    font-weight: bold;
+    font-size: 20px;
+}
+.collection-item a:hover{
+    color: #4f53db;
+}
+ .row.toys{
+     margin: 20px;
+ }
+.store-btns a{
+    margin-left: 0;
+    margin-right: 15px;
+}
+ /*#edit-store{
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-left: 25px;
+ }*/
