@@ -16,7 +16,8 @@
 <input type = 'text' size='30' name = 'price' placeholder = '{{toy.price}}'>
 
 <input class="waves-effect waves-light btn" type='submit' value='Edit'>
-</form>
 <a class="cancel waves-effect waves-light btn" href = "{{ url_for('toyDescription',toystore_id=toystore_id, toy_id=toy.id)}}"> Cancel </a>
+
+</form>
 </div>
 {% endblock %} 

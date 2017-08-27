@@ -4,7 +4,8 @@
 <div class="form">
 <form action="{{ url_for('toystoreDelete', toystore_id=item.id)}}" method = 'post'>
 <input  class="waves-effect waves-light btn" type='submit' value = 'Delete'>
-</form>
 <a class="cancel waves-effect waves-light btn" href = "{{ url_for('toystores')}}"> Cancel </a>
+
+</form>
 </div>
 {% endblock %} 
