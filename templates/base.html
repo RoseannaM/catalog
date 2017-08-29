@@ -5,7 +5,6 @@
     {% block head %}
     <!-- Compiled and minified CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.1/css/materialize.min.css">
-    <link rel="stylesheet" type="text/css" href="/static/css/main.css">
     <link rel="stylesheet" type="text/css" href="/static/css/static-styles.css">
 
 
@@ -14,6 +13,14 @@
     <!-- Compiled and minified JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.1/js/materialize.min.js"></script>
     <script type="text/javascript" src="/static/javascript/main.js"></script>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js">
+
+    </script>
+
+    <script src="//apis.google.com/js/platform.js?onload=start">
+
+    </script>
     {% endblock %}
 </head>
 
@@ -25,7 +32,11 @@
                 <ul class="left">
                     <li class="linkbold"><a href="/toystores">Stores</a></li>
                     <li class="linkbold"><a href="/toys" class="linkbold">Toys</a></li>
-                    <li class="linkbold"><a href="#" class="linkbold">Somthing</a></li>
+                    {% if logged_in == True %}
+                    <li class="linkbold"><a href="/gdisconnect" class="linkbold">Logout</a></li>
+                    {% else %}
+                    <li class="linkbold"><a href="/login" class="linkbold">Login</a></li>
+                    {% endif%}
                 </ul>
             </div>
         </nav>

@@ -4,7 +4,8 @@ from sqlalchemy.orm import sessionmaker
 from database import Base, Toy, ToyStore
 app = Flask(__name__)
 
-engine = create_engine('sqlite:///toystore.db')
+# engine = create_engine('sqlite:///toystore.db')
+engine = create_engine('sqlite:///toystorewithusers.db')
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()

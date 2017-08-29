@@ -1,0 +1,74 @@
+.collection, .collection-item, .collection-header {
+  border: none;
+  border-bottom: none !important; }
+
+#edit-store, #delete-store {
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-left: 25px; }
+
+.active {
+  background-color: grey; }
+
+h1 {
+  margin-left: 20px; }
+
+#pagenav {
+  background: #3f51b5 !important; }
+
+#content {
+  display: grid; }
+
+#main-stores {
+  float: left;
+  width: 40%; }
+
+.btn {
+  box-shadow: none;
+  padding-right: 10px;
+  padding-left: 10px;
+  margin-left: 20px; }
+
+.form {
+  margin: 20px; }
+  .form p {
+    font-size: 15px;
+    font-weight: bold; }
+
+.row.toys {
+  margin: 20px; }
+
+.cancel, #delete-toy, #delete-store {
+  width: 117px;
+  background-color: lightcoral; }
+  .cancel:hover, #delete-toy:hover, #delete-store:hover {
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    vertical-align: middle;
+    z-index: 1;
+    -webkit-transition: .3s ease-out;
+    transition: .3s ease-out;
+    background-color: #f39c9c; }
+
+.confirm-delete {
+  margin: 40px; }
+
+#back, #edit-store {
+  background-color: #2196F3; }
+
+.card-action a, .store-btns a {
+  margin-left: 0;
+  margin-right: 20px; }
+
+#signInButton {
+  margin: auto;
+  margin-top: 15%; }
+
+/*toys template css*/
+.collection-item a {
+  font-weight: bold;
+  font-size: 20px; }
+  .collection-item a:hover {
+    color: #4f53db; }
+
+/*# sourceMappingURL=static-styles.css.map */
