@@ -5,8 +5,10 @@ from database import Base, Toy, ToyStore, User
 import database_functions
 app = Flask(__name__)
 
+engine = create_engine('sqlite:///toystoredb.db')
+
 #engine = create_engine('sqlite:///toystore.db')
-engine = create_engine('sqlite:///toystorewithusers.db')
+# engine = create_engine('sqlite:///toystorewithusers.db')
 
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
@@ -169,18 +171,19 @@ def gdisconnect():
     print 'result is '
     print result
     if result['status'] == '200':
-        del login_session['access_token']
-        del login_session['gplus_id']
-        del login_session['username']
-        del login_session['email']
-        del login_session['picture']
+        # del login_session['access_token']
+        # del login_session['gplus_id']
+        # del login_session['username']
+        # del login_session['email']
+        # del login_session['picture']
         response = make_response(json.dumps('Successfully disconnected.'), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
     else:
         response = make_response(json.dumps('Failed to revoke token for given user.', 400))
         response.headers['Content-Type'] = 'application/json'
-        return response
+    login_session.clear()
+    return response
 
 
 
@@ -201,23 +204,42 @@ def toys():
 
 @app.route('/toystores/<int:toystore_id>/')
 def toystoreDescription(toystore_id):
+    """Description of the toystore"""
+    toystore = dbq.returnToystore(toystore_id)
+    print toystore.name
+    # print user_id
+    creator = getUserInfo(toystore.user_id)
+    print creator.name
+    store = dbq.returnToystore(toystore_id)
+    storetoys = dbq.returnToysForStore(toystore_id)
+
     if 'username' not in login_session:
         logged_in = False
     else:
         logged_in = True
-    store = dbq.returnToystore(toystore_id)
-    storetoys = dbq.returnToysForStore(toystore_id)
-    return render_template('store_info.html', store=store, logged_in=logged_in, storetoys=storetoys)
+
+    if creator.id != login_session['user_id']:
+        authorised = False
+    else:
+        authorised = True
+    return render_template('store_info.html', store=store, logged_in=logged_in, authorised=authorised, storetoys=storetoys)
 
 
 @app.route('/toys/<int:toystore_id>/<int:toy_id>/')
 def toyDescription(toystore_id, toy_id):
+    toy = dbq.returnToy(toy_id)
+    creator = getUserInfo(toy.user_id)
     if 'username' not in login_session:
         logged_in = False
     else:
         logged_in = True
-    toy = dbq.returnToy(toy_id)
-    return render_template('toy_info.html', toy=toy, logged_in=logged_in, toystore_id=toystore_id)
+
+    if creator.id != login_session['user_id']:
+        authorised = False
+    else:
+        authorised = True
+
+    return render_template('toy_info.html', toy=toy, logged_in=logged_in, authorised=authorised, toystore_id=toystore_id)
 
 
 @app.route('/toystores/new/', methods=['GET', 'POST'])
@@ -240,6 +262,13 @@ def newToystore():
 
 @app.route('/toystores/<int:toystore_id>/add-toy/', methods=['GET', 'POST'])
 def newToy(toystore_id):
+    toystore = dbq.returnToystore(toystore_id)
+    creator = getUserInfo(toystore.user_id)
+    if 'username' not in login_session:
+        return redirect('/login')
+    if creator.id != login_session['user_id']:
+        return redirect(url_for('toystoreDescription',toystore_id=toystore_id))
+
     print toystore_id
     toystore = dbq.returnToystore(toystore_id)
     if request.method == 'POST':
@@ -262,7 +291,9 @@ def newToy(toystore_id):
 
 @app.route('/toystores/<int:toystore_id>/edit/', methods=['GET', 'POST'])
 def editToystore(toystore_id):
-    if 'username' not in login_session:
+    toystore = dbq.returnToystore(toystore_id)
+    creator = getUserInfo(toystore.user_id)
+    if 'username' not in login_session or creator.id != login_session['user_id']:
         return redirect('/login')
 
     editedStore = session.query(ToyStore).filter_by(id=toystore_id).one()
@@ -288,7 +319,9 @@ def editToystore(toystore_id):
 
 @app.route('/toys/<int:toystore_id>/<int:toy_id>/edit', methods=['GET', 'POST'])
 def editToy(toy_id,toystore_id):
-    if 'username' not in login_session:
+    toystore = dbq.returnToystore(toystore_id)
+    creator = getUserInfo(toystore.user_id)
+    if 'username' not in login_session or creator.id != login_session['user_id']:
         return redirect('/login')
 
     editedToy = session.query(Toy).filter_by(id=toy_id).one()
@@ -318,12 +351,15 @@ def editToy(toy_id,toystore_id):
 
 def toystoreDelete(toystore_id):
     """Delete toystore function"""
-    if 'username' not in login_session:
+    toystore = dbq.returnToystore(toystore_id)
+    creator = getUserInfo(toystore.user_id)
+    if 'username' not in login_session or creator.id != login_session['user_id']:
         return redirect('/login')
     toystoredelete = session.query(ToyStore).filter_by(id=toystore_id).one()
     if request.method == 'POST':
         session.delete(toystoredelete)
         session.commit()
+        print'done'
         return redirect(url_for('toystores'))
     else:
         return render_template('delete_toystore.html', item=toystoredelete)
@@ -331,12 +367,17 @@ def toystoreDelete(toystore_id):
 @app.route('/toys/<int:toystore_id>/<int:toy_id>/delete', methods=['GET', 'POST'])
 def deleteToy(toy_id,toystore_id):
     """Delete toystore function"""
-    #confim logged in? 
+    toystore = dbq.returnToystore(toystore_id)
+    creator = getUserInfo(toystore.user_id)
+    if 'username' not in login_session or creator.id != login_session['user_id']:
+        return redirect('/login') 
     toy = session.query(Toy).filter_by(id=toy_id).one()
     if request.method == 'POST':
         session.delete(toy)
         session.commit()
-        return redirect(url_for('toystore', toystore_id=toystore_id))
+        print'done'
+        print toystore_id
+        return redirect(url_for('toystoreDescription', toystore_id=toystore_id))
     else:
         return render_template('delete_toy.html', toy=toy, toystore_id=toystore_id )
 

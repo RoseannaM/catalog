@@ -4,8 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from database import Base, Toy, ToyStore
 app = Flask(__name__)
 
-# engine = create_engine('sqlite:///toystore.db')
-engine = create_engine('sqlite:///toystorewithusers.db')
+engine = create_engine('sqlite:///toystoredb.db')
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
@@ -16,7 +15,7 @@ def returnToystores():
     return stores
 
 def returnRecentToys():
-    """Returns the most ten most recent toys"""
+    """Returns the ten most recent toys"""
     recentToys = session.query(Toy).limit(10)
     return recentToys
 

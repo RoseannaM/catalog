@@ -80,10 +80,7 @@ class Toy(Base):
         }
 
 
-
-# engine = create_engine('sqlite:///toystore.db')
-engine = create_engine('sqlite:///toystorewithusers.db')
-
+engine = create_engine('sqlite:///toystoredb.db')
 
 
 Base.metadata.create_all(engine)
