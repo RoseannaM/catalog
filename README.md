@@ -4,7 +4,7 @@ It also implements an sqlite database, managed with SQLAlchemy
 ### Dependancies
 You will require Vagrant, the [Vagrantfile](https://github.com/udacity/fullstack-nanodegree-vm/blob/master/vagrant/Vagrantfile) and Virtualbox
 ### How to run the project:
-2. Clone the repo to your device: [https://github.com/RoseannaM/catalog](../)
+1. Clone the repo to your device: [https://github.com/RoseannaM/catalog](../)
 1. Install Vagrant and Virtual box, and clone the vagrantfile into your directory.
 2. cd into your directory and spin up and sign into vagrant with  ```vagrant up``` and ```vagrant ssh``` respectively
 3. Once in, cd /vagrant and run ```python database.py``` to create the database, then ```python data.py``` to fill it with data
