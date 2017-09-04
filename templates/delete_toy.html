@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block head %} {{ super() }} {% endblock %} {% block content %}
+{% extends "base.html" %} {% block head %} {{ super() }} {% endblock %} {{ logged_in }} {% block content %}
 
 <h3 class="confirm-delete"> Are you sure you want to delete {{toy.name}}? </h3>
 <div class="form">

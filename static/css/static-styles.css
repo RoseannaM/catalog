@@ -1,6 +1,7 @@
 .collection, .collection-item, .collection-header {
   border: none;
-  border-bottom: none !important; }
+  border-bottom: none !important;
+  padding-left: 20px !important; }
 
 #edit-store, #delete-store {
   padding-left: 10px;
@@ -56,6 +57,9 @@ h1 {
 #back, #edit-store {
   background-color: #2196F3; }
 
+#store-info-back {
+  background-color: #2196F3; }
+
 .card-action a, .store-btns a {
   margin-left: 0;
   margin-right: 20px; }
@@ -70,5 +74,12 @@ h1 {
   font-size: 20px; }
   .collection-item a:hover {
     color: #4f53db; }
+
+#add-store {
+  margin-left: 0; }
+
+#login-btn {
+  margin-left: 0;
+  margin-top: 5px; }
 
 /*# sourceMappingURL=static-styles.css.map */

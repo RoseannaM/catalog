@@ -36,6 +36,7 @@ class ToyStore(Base):
     phone_number = Column(String(15))
     user_id = Column(Integer, ForeignKey('user.id'))
     user = relationship(User)
+    toy = relationship('Toy', cascade='all, delete-orphan')
 
 
     @property

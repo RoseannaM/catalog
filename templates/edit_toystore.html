@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block head %} {{ super() }} {% endblock %} {% block content %}
+{% extends "base.html" %} {% block head %} {{ super() }} {% endblock %} {{logged_in}} {% block content %}
 
 <div class="form">
 <form action= "{{url_for('editToystore', toystore_id=item.id)}}" method = 'POST'>
@@ -16,7 +16,7 @@
 <input type = 'text' size='30' name = 'address' placeholder = '{{item.address}}'>
 
 <input class="waves-effect waves-light btn" type='submit' value='Edit'>
-</form>
 <a class="cancel waves-effect waves-light btn" href = "{{ url_for('toystores')}}"> Cancel </a>
+</form>
 </div>
 {% endblock %} 

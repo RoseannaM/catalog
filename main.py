@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from functools import wraps
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database import Base, Toy, ToyStore, User
@@ -7,8 +8,6 @@ app = Flask(__name__)
 
 engine = create_engine('sqlite:///toystoredb.db')
 
-#engine = create_engine('sqlite:///toystore.db')
-# engine = create_engine('sqlite:///toystorewithusers.db')
 
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
@@ -30,18 +29,48 @@ CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
 APPLICATION_NAME = "Toystore Catalogue"
 
+def login_required(func):
+    """check if the user is logged in"""
+    @wraps(func)
+    def decorated_function(*args, **kwargs):
+        """func decorator"""
+        if 'username' not in login_session:
+            return redirect('/login')
+        return func(*args, **kwargs)
+    return decorated_function
+
+def is_authorised(creator):
+    """checks if the user is also the creator"""
+    return creator.id == login_session['user_id']
+
+def auth_bool(creator):
+    """checks if the user is authorised and sets a bool"""
+    if creator.id != login_session['user_id']:
+        authorised = False
+    else:
+        authorised = True
+    return authorised
+
+def logged_in_bool():
+    """checks if the user is logged in and sets a bool"""
+    if 'username' not in login_session:
+        logged_in = False
+    else:
+        logged_in = True
+    return logged_in
+
 @app.route('/')
 
 @app.route('/login')
 def showLogin():
+    """shows the google login page"""
+    logged_in = logged_in_bool()
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for x in xrange(32))
     login_session['state'] = state
-    return render_template('login.html', STATE=state)
-
+    return render_template('login.html', logged_in=logged_in, STATE=state)
 
 @app.route('/gconnect', methods=['POST'])
-
 def gconnect():
     # Validate state token
     if request.args.get('state') != login_session['state']:
@@ -50,7 +79,6 @@ def gconnect():
         return response
     # Obtain authorization code
     code = request.data
-
     try:
         # Upgrade the authorization code into a credentials object
         oauth_flow = flow_from_clientsecrets('client_secrets.json', scope='')
@@ -125,15 +153,17 @@ def gconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' " style = "width: 300px; height: 300px;border-radius: \
+    150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
     flash("you are now logged in as %s" % login_session['username'])
     print "done!"
     return output
 
 
 def createUser(login_session):
+    """creates a new user"""
     newUser = User(name=login_session['username'], email=login_session[
-                   'email'], picture=login_session['picture'])
+        'email'], picture=login_session['picture'])
     session.add(newUser)
     session.commit()
     user = session.query(User).filter_by(email=login_session['email']).one()
@@ -141,11 +171,13 @@ def createUser(login_session):
 
 
 def getUserInfo(user_id):
+    """get the user information from their id"""
     user = session.query(User).filter_by(id=user_id).one()
     return user
 
 
 def getUserID(email):
+    """gets the user's email"""
     try:
         user = session.query(User).filter_by(email=email).one()
         return user.id
@@ -156,6 +188,7 @@ def getUserID(email):
 
 @app.route('/gdisconnect')
 def gdisconnect():
+    """The logout function"""
     access_token = login_session.get('access_token')
     if access_token is None:
         print 'Access Token is None'
@@ -171,11 +204,6 @@ def gdisconnect():
     print 'result is '
     print result
     if result['status'] == '200':
-        # del login_session['access_token']
-        # del login_session['gplus_id']
-        # del login_session['username']
-        # del login_session['email']
-        # del login_session['picture']
         response = make_response(json.dumps('Successfully disconnected.'), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
@@ -186,66 +214,61 @@ def gdisconnect():
     return response
 
 
-
 @app.route('/toystores/')
 def toystores():
-    if 'username' not in login_session:
-        logged_in = False
-    else:
-        logged_in = True
+    """The main page"""
+    logged_in = logged_in_bool()
     toys = dbq.returnRecentToys()
     stores = dbq.returnToystores()
     return render_template('main.html', toys=toys, logged_in=logged_in, stores=stores)
 
 @app.route('/toys/')
 def toys():
+    """lists all the toys on a page"""
+    logged_in = logged_in_bool()
     alltoys = dbq.returnToys()
-    return render_template('toys.html', toys=alltoys)
+    return render_template('toys.html', logged_in=logged_in, toys=alltoys)
 
 @app.route('/toystores/<int:toystore_id>/')
 def toystoreDescription(toystore_id):
     """Description of the toystore"""
     toystore = dbq.returnToystore(toystore_id)
-    print toystore.name
-    # print user_id
     creator = getUserInfo(toystore.user_id)
-    print creator.name
     store = dbq.returnToystore(toystore_id)
     storetoys = dbq.returnToysForStore(toystore_id)
 
-    if 'username' not in login_session:
-        logged_in = False
+    logged_in = logged_in_bool()
+    if logged_in:
+        authorised = auth_bool(creator)
     else:
-        logged_in = True
-
-    if creator.id != login_session['user_id']:
         authorised = False
-    else:
-        authorised = True
-    return render_template('store_info.html', store=store, logged_in=logged_in, authorised=authorised, storetoys=storetoys)
+
+    return render_template('store_info.html', store=store, logged_in=logged_in,
+                           authorised=authorised, storetoys=storetoys)
 
 
 @app.route('/toys/<int:toystore_id>/<int:toy_id>/')
 def toyDescription(toystore_id, toy_id):
+    """shows description of the individual toy"""
     toy = dbq.returnToy(toy_id)
     creator = getUserInfo(toy.user_id)
-    if 'username' not in login_session:
-        logged_in = False
-    else:
-        logged_in = True
 
-    if creator.id != login_session['user_id']:
+    logged_in = logged_in_bool()
+    if logged_in:
+        authorised = auth_bool(creator)
+    else:
         authorised = False
-    else:
-        authorised = True
 
-    return render_template('toy_info.html', toy=toy, logged_in=logged_in, authorised=authorised, toystore_id=toystore_id)
+    return render_template('toy_info.html', toy=toy, logged_in=logged_in,
+                           authorised=authorised, toystore_id=toystore_id)
 
 
 @app.route('/toystores/new/', methods=['GET', 'POST'])
+@login_required
 def newToystore():
-    if 'username' not in login_session:
-        return redirect('/login')
+    """adds a new toystore"""
+    logged_in = logged_in_bool()
+
     if request.method == 'POST':
         newStore = ToyStore(name=request.form['name'],
                             description=request.form['description'],
@@ -257,19 +280,19 @@ def newToystore():
         flash("New toysore added")
         return redirect(url_for('toystores'))
     else:
-        return render_template('add_toystore.html')
+        return render_template('add_toystore.html', logged_in=logged_in)
 
 
 @app.route('/toystores/<int:toystore_id>/add-toy/', methods=['GET', 'POST'])
+@login_required
 def newToy(toystore_id):
+    """adds a new toy"""
     toystore = dbq.returnToystore(toystore_id)
     creator = getUserInfo(toystore.user_id)
-    if 'username' not in login_session:
-        return redirect('/login')
-    if creator.id != login_session['user_id']:
-        return redirect(url_for('toystoreDescription',toystore_id=toystore_id))
+    logged_in = logged_in_bool()
+    if not is_authorised(creator):
+        return redirect(url_for('toystoreDescription', toystore_id=toystore_id))
 
-    print toystore_id
     toystore = dbq.returnToystore(toystore_id)
     if request.method == 'POST':
         addNewToy = Toy(name=request.form['name'],
@@ -280,24 +303,24 @@ def newToy(toystore_id):
                         user_id=toystore.user_id)
         session.add(addNewToy)
         session.commit()
-        #get new toy id
         toy_id = addNewToy.id
-        # flash("New toy added")
         return redirect(url_for('toyDescription', toystore_id=toystore_id, toy_id=toy_id))
     else:
-        print toystore_id
-        return render_template('add_toy.html', toystore_id=toystore_id)
+        return render_template('add_toy.html', logged_in=logged_in, toystore_id=toystore_id)
 
 
 @app.route('/toystores/<int:toystore_id>/edit/', methods=['GET', 'POST'])
+@login_required
 def editToystore(toystore_id):
+    """edit the toystore details"""
     toystore = dbq.returnToystore(toystore_id)
     creator = getUserInfo(toystore.user_id)
-    if 'username' not in login_session or creator.id != login_session['user_id']:
-        return redirect('/login')
+    logged_in = logged_in_bool()
+
+    if not is_authorised(creator):
+        return redirect(url_for('toystoreDescription', toystore_id=toystore_id))
 
     editedStore = session.query(ToyStore).filter_by(id=toystore_id).one()
-    print editedStore
     if request.method == 'POST':
         if request.form['name']:
             editedStore.name = request.form['name']
@@ -315,17 +338,21 @@ def editToystore(toystore_id):
         return redirect(url_for('toystores'))
     else:
         return render_template(
-            'edit_toystore.html', toystore_id=toystore_id, item=editedStore)
+            'edit_toystore.html', logged_in=logged_in, toystore_id=toystore_id, item=editedStore)
 
 @app.route('/toys/<int:toystore_id>/<int:toy_id>/edit', methods=['GET', 'POST'])
+@login_required
 def editToy(toy_id,toystore_id):
+    """edit individual toy"""
     toystore = dbq.returnToystore(toystore_id)
     creator = getUserInfo(toystore.user_id)
-    if 'username' not in login_session or creator.id != login_session['user_id']:
-        return redirect('/login')
 
+    if not is_authorised(creator):
+        return redirect(url_for('toyDescription', toy_id=toy_id,  toystore_id=toystore_id))
+
+    logged_in = logged_in_bool()
     editedToy = session.query(Toy).filter_by(id=toy_id).one()
-    print editedToy
+
     if request.method == 'POST':
         if request.form['name']:
             editedToy.name = request.form['name']
@@ -341,49 +368,53 @@ def editToy(toy_id,toystore_id):
         session.add(editedToy)
         session.commit()
         toy_id = editedToy.id
-        return redirect(url_for('toyDescription',toystore_id=toystore_id,toy_id=toy_id))
+        return redirect(url_for('toyDescription', toystore_id=toystore_id, toy_id=toy_id))
     else:
-        return render_template('edit_toy.html', toystore_id=toystore_id,
+        return render_template('edit_toy.html', logged_in=logged_in, toystore_id=toystore_id,
                                toy_id=toy_id, toy=editedToy)
 
 
 @app.route('/toystores/<int:toystore_id>/delete', methods=['GET', 'POST'])
-
+@login_required
 def toystoreDelete(toystore_id):
     """Delete toystore function"""
     toystore = dbq.returnToystore(toystore_id)
     creator = getUserInfo(toystore.user_id)
-    if 'username' not in login_session or creator.id != login_session['user_id']:
-        return redirect('/login')
+    logged_in = logged_in_bool()
+
+    if not is_authorised(creator):
+        return redirect(url_for('toystoreDescription', toystore_id=toystore_id))
+
     toystoredelete = session.query(ToyStore).filter_by(id=toystore_id).one()
     if request.method == 'POST':
         session.delete(toystoredelete)
         session.commit()
-        print'done'
         return redirect(url_for('toystores'))
     else:
-        return render_template('delete_toystore.html', item=toystoredelete)
+        return render_template('delete_toystore.html', logged_in=logged_in, item=toystoredelete)
 
 @app.route('/toys/<int:toystore_id>/<int:toy_id>/delete', methods=['GET', 'POST'])
-def deleteToy(toy_id,toystore_id):
+@login_required
+def deleteToy(toy_id, toystore_id):
     """Delete toystore function"""
     toystore = dbq.returnToystore(toystore_id)
     creator = getUserInfo(toystore.user_id)
-    if 'username' not in login_session or creator.id != login_session['user_id']:
-        return redirect('/login') 
+    logged_in = logged_in_bool()
+
+    if not is_authorised(creator):
+        return redirect(url_for('toyDescription', toy_id=toy_id, toystore_id=toystore_id))
+
     toy = session.query(Toy).filter_by(id=toy_id).one()
     if request.method == 'POST':
         session.delete(toy)
         session.commit()
-        print'done'
-        print toystore_id
-        return redirect(url_for('toystoreDescription', toystore_id=toystore_id))
+        return redirect(url_for('toystoreDescription', logged_in=logged_in,
+                                toystore_id=toystore_id))
     else:
-        return render_template('delete_toy.html', toy=toy, toystore_id=toystore_id )
+        return render_template('delete_toy.html', toy=toy, toystore_id=toystore_id)
 
 
 #JSON Endpoints
-
 @app.route('/toys/JSON')
 def toysJSON():
     """returns all the toys in a json blob"""

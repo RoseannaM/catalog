@@ -3,7 +3,7 @@
 
 <body>
 
-{% extends "base.html" %} {% block head %} {{ super() }} {% endblock %} {% block content %}
+{% extends "base.html" %} {% block head %} {{ super() }} {% endblock %} {{ logged_in }} {% block content %}
 
     <!-- GOOGLE PLUS SIGN IN BUTTON-->
 
